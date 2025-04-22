@@ -1,32 +1,33 @@
-import { Url } from "../Models/Url.js"
+import { Url } from "../Models/Url.js";
 import shortid from "shortid";
 
-export const shortUrl = async(req,res)=>{
+// Load base URL from environment or default to localhost
+const baseUrl = process.env.BASE_URL || 'http://localhost:2000';
+
+export const shortUrl = async (req, res) => {
     const longUrl = req.body.longUrl;
     const shortCode = shortid.generate();
 
-    const shortUrl = `http://localhost:2000/${shortCode}`
+    const shortUrl = `${baseUrl}/${shortCode}`;
 
-    //save to database 
-    const newUrl = new Url({shortCode,longUrl})
+    // Save to database
+    const newUrl = new Url({ shortCode, longUrl });
     await newUrl.save();
 
-    console.log("short saved = ",newUrl)
+    console.log("Short saved =", newUrl);
 
-    res.render("index.ejs",{shortUrl});
-}
+    res.render("index.ejs", { shortUrl });
+};
 
-export const getOriginalUrl = async (req,res)=>{
-    const shortCode = req.params.shortCode
+export const getOriginalUrl = async (req, res) => {
+    const shortCode = req.params.shortCode;
 
-    //find on database 
-    const originalUrl = await Url.findOne({shortCode});
+    // Find in database
+    const originalUrl = await Url.findOne({ shortCode });
 
-    if(originalUrl){
-        res.redirect(originalUrl.longUrl);
-    }else{
-        res.json({message:"Invalid short Code..!"});
+    if (originalUrl) {
+        return res.redirect(originalUrl.longUrl);
+    } else {
+        return res.json({ message: "Invalid short Code..!" });
     }
-
-    res.json({originalUrl});
-}
+};
